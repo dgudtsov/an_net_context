@@ -156,8 +156,8 @@ if __name__ == '__main__':
 #            print
             context_conf += net_context_template.format(context=net_cont,loopback=loopback,ip_interface=interface.stringify(ip_interface_template))
 
-#    print context_conf
-#    print bgp_conf
+    print context_conf
+    print bgp_conf
     print bfd_conf
 
     pass
