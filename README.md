@@ -75,5 +75,36 @@ Run:
 
 $ python net_context.py
 
-and you will get configuration commands on stdout. Copy & paste it into MCC cli.
+and you will get configuration commands on stdout. Copy & paste it into MCC cli:
+
+        network-context zebra1 ; top; commit
+         network-context zebra1 loopback-ip lab-loop-1 ip-address 10.10.10.1 gtp-u yes allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true 
+         !
+
+         ip-interface zebra1_3-1 port vth-3-1 vlan-tag 3001 ip-address 10.10.31.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+         !
+
+         ip-interface zebra1_3-2 port vth-3-2 vlan-tag 3002 ip-address 10.10.32.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+         !
+
+         ip-interface zebra1_4-1 port vth-4-1 vlan-tag 4001 ip-address 10.10.41.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+         !
+
+         ip-interface zebra1_4-2 port vth-4-2 vlan-tag 4002 ip-address 10.10.42.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+         !
+
+         !
+
+
+        ip-protocols
+        policy
+
+        prefix-list pl_zebra1_bgp_in
+         10 permit address 0.0.0.0 prefix-length 32
+        !
+        prefix-list pl_zebra1_bgp_out
+         10 permit address 0.0.0.0 prefix-length 32
+        !
+        commit
+...
 
