@@ -7,7 +7,7 @@ Work with python **2.7**
 ## Prepare configuration
 
 ### 1. Edit existing conf_context_lab.py
-Any number of network contexts can be defined as the following:
+#### Any number of network contexts can be defined as the following:
 
         net_context = {
           "context-1": {
@@ -26,6 +26,14 @@ Any number of network contexts can be defined as the following:
           ...
           "context-N": {}
         }
+
+#### Each context can store a number of loopbacks, ip interfaces, bgp and bfd entities:
+          "context-1": {
+              "loopback":[ {"name":"loopback-1","ip":"10.10.10.1",...},{"name":"loopback-2","ip":"10.10.10.2",...},...,{} ],
+              "ip-intf":[ {"name_prefix":"ipv4",...},{"name_prefix":"ipv6",...},...,{} ],
+              "bgp" : {...,"neighbor": [ {"name_prefix":"ipv4",...}, {"name_prefix":"ipv6",...},...,{} ] },
+              "bfd" : {"interface": [ {"name_prefix":"ipv4",...}, {"name_prefix":"ipv6",...},...,{} ] }
+          }
 
 ### 2. Verify existing configuration
 Run: 
