@@ -120,6 +120,18 @@ class BFD(Unistruct):
 
         return interfaces_definition
 
+def uepool_cfg(cfg_obj):
+    ue_sub_pool, ue_pool, ue_pool_subpool = "","",""
+    
+    for pool in cfg_obj:
+        
+        uepool = UEPool(pool)
+    
+        ue_sub_pool += uepool.stringify(uesubpool_template)
+        
+        ue_pool += uepool_template.format(uepool = uepool )
+    
+    return ue_pool + ue_sub_pool
 
 if __name__ == '__main__':
 
@@ -132,18 +144,7 @@ if __name__ == '__main__':
         net_cont = Context(c)
         
         if "ue-pool" in net_context[context].keys():
-            
-            ue_sub_pool, ue_pool, ue_pool_subpool = "","",""
-            
-            for pool in net_context[context]["ue-pool"]:
-                
-                uepool = UEPool(pool)
-            
-                ue_sub_pool += uepool.stringify(uesubpool_template)
-                
-                ue_pool += uepool_template.format(uepool = uepool )
-            
-            ue_pool_subpool = ue_pool + ue_sub_pool
+            ue_pool_subpool = uepool_cfg (net_context[context]["ue-pool"])
 
         if "ip-intf" in net_context[context].keys():
 
@@ -174,6 +175,7 @@ if __name__ == '__main__':
     
                 if "bgp" in net_context[context].keys():
                 # if bgp key is defined in current context
+                                  
                     bgp = BGP(net_context[context]["bgp"])
     
                     bgp.name = context
