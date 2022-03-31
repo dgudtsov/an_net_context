@@ -116,3 +116,4 @@ and you will get configuration commands on stdout. Copy & paste it into MCC cli:
         commit
 ...
 
+You can check configuration example output in output.log file in this repo

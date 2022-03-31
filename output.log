@@ -1,0 +1,217 @@
+
+network-context zebra1 ; top; commit
+ 
+ network-context zebra1 loopback-ip lab-loop-1 ip-address 10.10.10.1 gtp-u yes allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true
+
+ network-context zebra1 loopback-ip lab-loop-2 ip-address 10.10.10.2 gtp-u yes allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true
+ 
+ !
+ 
+ ip-interface Gi_ipv4_3-1_3001 port vth-3-1 vlan-tag 3001 ip-address 10.10.31.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv4_3-2_3002 port vth-3-2 vlan-tag 3002 ip-address 10.10.32.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv4_4-1_4001 port vth-4-1 vlan-tag 4001 ip-address 10.10.41.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv4_4-2_4002 port vth-4-2 vlan-tag 4002 ip-address 10.10.42.1 prefix-length 24 mtu 1500 admin-state enabled ; commit 
+ !
+
+ !
+
+network-context zebra1 ; top; commit
+ 
+ network-context zebra1 loopback-ip lab-loop-1 ip-address 10.10.10.1 gtp-u yes allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true
+
+ network-context zebra1 loopback-ip lab-loop-2 ip-address 10.10.10.2 gtp-u yes allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true
+ 
+ !
+ 
+ ip-interface Gi_ipv6_3-1_3011 port vth-3-1 vlan-tag 3011 ip-address ::1 prefix-length 64 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv6_3-2_3012 port vth-3-2 vlan-tag 3012 ip-address ::2 prefix-length 64 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv6_4-1_4011 port vth-4-1 vlan-tag 4011 ip-address ::3 prefix-length 64 mtu 1500 admin-state enabled ; commit 
+ !
+
+ ip-interface Gi_ipv6_4-2_4012 port vth-4-2 vlan-tag 4012 ip-address ::4 prefix-length 64 mtu 1500 admin-state enabled ; commit 
+ !
+
+ !
+
+
+ip-protocols
+policy
+
+prefix-list pl_Gi_ipv4_bgp_in
+ 10 permit address 0.0.0.0 prefix-length 32
+!
+prefix-list pl_Gi_ipv4_bgp_out
+ 10 permit address 0.0.0.0 prefix-length 32
+!
+commit
+
+!
+ip-protocols bgp router zebra1 extended-asn-cap local-as  64600 router-id 0 ; top; commit
+ !
+ip-protocols bgp router zebra1 max-paths ebgp 4
+ 
+ !
+ 
+  neighbor Gi_ipv4_3-1_3001 neighbor-addr 10.10.31.10 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv4_3-2_3002 neighbor-addr 10.10.32.10 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv4_4-1_4001 neighbor-addr 10.10.41.10 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv4_4-2_4002 neighbor-addr 10.10.42.10 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+ commit
+ 
+ !
+ ipv4-ucast-af
+  dampening admin-state disabled
+  redistribute static
+ ! 
+  
+   neighbor Gi_ipv4_3-1_3001
+    prefix-list out prefix-list-name pl_Gi_ipv4_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv4_3-2_3002
+    prefix-list out prefix-list-name pl_Gi_ipv4_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv4_4-1_4001
+    prefix-list out prefix-list-name pl_Gi_ipv4_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv4_4-2_4002
+    prefix-list out prefix-list-name pl_Gi_ipv4_bgp_out
+    redistribute static
+   
+   !
+
+ ! 
+ ipv6-ucast-af
+  dampening admin-state disabled
+ !
+ commit
+
+ip-protocols
+policy
+
+prefix-list pl_Gi_ipv6_bgp_in
+ 10 permit address 0.0.0.0 prefix-length 32
+!
+prefix-list pl_Gi_ipv6_bgp_out
+ 10 permit address 0.0.0.0 prefix-length 32
+!
+commit
+
+!
+ip-protocols bgp router zebra1 extended-asn-cap local-as  64600 router-id 1 ; top; commit
+ !
+ip-protocols bgp router zebra1 max-paths ebgp 4
+ 
+ !
+ 
+  neighbor Gi_ipv6_3-1_3011 neighbor-addr ::1 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv6_3-2_3012 neighbor-addr ::2 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv6_4-1_4011 neighbor-addr ::3 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+  neighbor Gi_ipv6_4-2_4012 neighbor-addr ::4 remote-as 64601 fall-over-bfd single-hop
+ exit
+ !
+
+ commit
+ 
+ !
+ ipv4-ucast-af
+  dampening admin-state disabled
+  redistribute static
+ ! 
+  
+   neighbor Gi_ipv6_3-1_3011
+    prefix-list out prefix-list-name pl_Gi_ipv6_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv6_3-2_3012
+    prefix-list out prefix-list-name pl_Gi_ipv6_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv6_4-1_4011
+    prefix-list out prefix-list-name pl_Gi_ipv6_bgp_out
+    redistribute static
+   
+   !
+
+   neighbor Gi_ipv6_4-2_4012
+    prefix-list out prefix-list-name pl_Gi_ipv6_bgp_out
+    redistribute static
+   
+   !
+
+ ! 
+ ipv6-ucast-af
+  dampening admin-state disabled
+ !
+ commit
+
+
+ip-protocols bfd bfd-timer-profile bfd_common_profile multiplier 3 tx-interval 500 rx-interval 500; commit
+ip-protocols bfd instance zebra1; commit
+
+bfd-interface Gi_ipv4_3-1_3001 bfd-timer-profile bfd_common_profile bfd-session 10.10.31.10 src-ip-address 10.10.31.1; exit; commit
+
+bfd-interface Gi_ipv4_3-2_3002 bfd-timer-profile bfd_common_profile bfd-session 10.10.32.10 src-ip-address 10.10.32.1; exit; commit
+
+bfd-interface Gi_ipv4_4-1_4001 bfd-timer-profile bfd_common_profile bfd-session 10.10.41.10 src-ip-address 10.10.41.1; exit; commit
+
+bfd-interface Gi_ipv4_4-2_4002 bfd-timer-profile bfd_common_profile bfd-session 10.10.42.10 src-ip-address 10.10.42.1; exit; commit
+
+
+
+ip-protocols bfd bfd-timer-profile bfd_common_profile multiplier 3 tx-interval 500 rx-interval 500; commit
+ip-protocols bfd instance zebra1; commit
+
+bfd-interface Gi_ipv6_3-1_3011 bfd-timer-profile bfd_common_profile bfd-session ::1 src-ip-address ::1; exit; commit
+
+bfd-interface Gi_ipv6_3-2_3012 bfd-timer-profile bfd_common_profile bfd-session ::2 src-ip-address ::2; exit; commit
+
+bfd-interface Gi_ipv6_4-1_4011 bfd-timer-profile bfd_common_profile bfd-session ::3 src-ip-address ::3; exit; commit
+
+bfd-interface Gi_ipv6_4-2_4012 bfd-timer-profile bfd_common_profile bfd-session ::4 src-ip-address ::4; exit; commit
+
+
+
