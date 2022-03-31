@@ -3,12 +3,17 @@
 @author: Denis Gudtsov
 '''
 
+
 net_context_template = """
 network-context {context.name} ; top; commit
- network-context {context.name} loopback-ip {loopback.name} ip-address {loopback.ip} gtp-u {loopback.gtp} allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true 
+ {loopback} 
  !
  {ip_interface}
  !
+"""
+
+loopback_template = """
+ network-context {context.name} loopback-ip {loopback.name} ip-address {loopback.ip} gtp-u {loopback.gtp} allow-subscriber-icmp-to-loopback false allow-network-icmp-to-loopback true
 """
 
 ip_interface_template = """
@@ -71,10 +76,10 @@ bfd-interface {interface.name} bfd-timer-profile bfd_common_profile bfd-session 
 """
 
 prefix_list_template="""
-prefix-list pl_{context.name}_bgp_in
+prefix-list pl_{neighbor.name_prefix}_bgp_in
  10 permit address 0.0.0.0 prefix-length 32
 !
-prefix-list pl_{context.name}_bgp_out
+prefix-list pl_{neighbor.name_prefix}_bgp_out
  10 permit address 0.0.0.0 prefix-length 32
 !
 commit

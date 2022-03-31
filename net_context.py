@@ -4,14 +4,21 @@
 '''
 
 '''
+v1.1
+Changes:
+- list of loopbacks can be defined per each network context
+- list of ip-intf, bgp, bfd
+
 TODO:
 add bgp in/out filtering
 add ue ip pools
 
 '''
 
-
+# BOTH format style are supported
 from conf_context_lab import *
+
+#from conf_context_lab_old import *
 
 from template_context import *
 
@@ -34,7 +41,7 @@ class Interface(Unistruct):
         interface_definition=""
         for idx,int_port in enumerate(self.port):
 
-            kvp = dict ( name=self.name_prefix+"_"+int_port,
+            kvp = dict ( name=self.name_prefix+"_"+int_port+"_"+str(self.vlan[idx]),
                          port = int_port,
                          vlan = self.vlan[idx],
                          ip = self.ipaddr[idx],
@@ -46,7 +53,6 @@ class Interface(Unistruct):
 
         return interface_definition
 
-
 class BGP(Unistruct):
 
     def neighbors(self,template):
@@ -55,7 +61,7 @@ class BGP(Unistruct):
 
         for idx,port in enumerate(self.port):
 
-            kvp = dict ( name=self.name_prefix+"_"+port,
+            kvp = dict ( name=self.name_prefix+"_"+port+"_"+str(self.vlan[idx]),
                          addr = self.addr[idx],
                          remote_as= self.remote_as,
                          name_prefix = self.name_prefix
@@ -76,7 +82,7 @@ class BFD(Unistruct):
 
         for idx,port in enumerate(self.port):
 
-            kvp = dict ( name=self.name_prefix+"_"+port,
+            kvp = dict ( name=self.name_prefix+"_"+port+"_"+str(self.vlan[idx]),
                          addr = self.addr[idx],
                          src = self.src[idx],
                          name_prefix = self.name_prefix
@@ -101,60 +107,92 @@ if __name__ == '__main__':
 
         if "ip-intf" in net_context[context].keys():
 
-            loopback = Loopback(net_context[context]["loopback"])
+            loopbacks=[]
+            if isinstance(net_context[context]["loopback"], list):
+                loopbacks = net_context[context]["loopback"]
+            else:
+                loopbacks.append(net_context[context]["loopback"])
 
-            interface = Interface(net_context[context]["ip-intf"])
+#           loopback = Loopback(net_context[context]["loopback"])
 
-            if interface.name_prefix=="":
-                interface.name_prefix = context
+            loopback_conf=""
 
-            if "bgp" in net_context[context].keys():
-            # if bgp key is defined in current context
-                bgp = BGP(net_context[context]["bgp"])
-
-                bgp.name = context
-                if bgp.router_id =="":
-                    bgp.router_id = loopback.ip
-
-                bgp.neighbor = BGP(net_context[context]["bgp"]["neighbor"])
-
-                if bgp.neighbor.name_prefix=="":
-                    bgp.neighbor.name_prefix = context
-
-                bgp.neighbor.port = interface.port
-
-    #        print bgp.neighbor.neighbors(bgp_neighbor_template)
-    #        print bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
-
-                ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
-
-#                print prefix_list_template.format(context = net_cont)
-                bgp_conf += bgp_template.format(bgp=bgp,
-                                                ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template),
-                                                neighbor_list = bgp.neighbor.neighbors(bgp_neighbor_template),
-                                                prefix_list = prefix_list_template.format(context = net_cont)
-                                                )
-
-            #print bgp_template.format(bgp=bgp,ipv4_neighbor="",neighbor_list="")
-                if "bfd"  in net_context[context].keys():
-                    bfd = BFD(net_context[context]["bfd"])
-    #                bfd = BFD(dict())
-                    bfd.name = context
-                    bfd.interfaces = BFD(net_context[context]["bfd"]["interface"])
-
-                    if bfd.interfaces.name_prefix=="":
-                        bfd.interfaces.name_prefix = context
-
-                    bfd.interfaces.port = interface.port
-                    bfd.interfaces.src = interface.ipaddr
-                    bfd.interfaces.addr = bgp.neighbor.addr
-
-                    interfaces = bfd.interfaces.interfaces(bfd_interfaces_template)
-
-                    bfd_conf += bfd_template.format(bfd=bfd, bfd_interface = bfd.interfaces.interfaces(bfd_interfaces_template)
-                                                )
-#            print
-            context_conf += net_context_template.format(context=net_cont,loopback=loopback,ip_interface=interface.stringify(ip_interface_template))
+            for loopback in loopbacks:
+                loopback_conf += loopback_template.format(context=net_cont, loopback=Loopback(loopback))
+            
+            net_context_interfaces=[]
+            if isinstance(net_context[context]["ip-intf"], list):
+                net_context_interfaces = net_context[context]["ip-intf"]
+            else: 
+                net_context_interfaces.append(net_context[context]["ip-intf"])
+            
+            for idx, intf in enumerate(net_context_interfaces):
+                interface = Interface(intf)
+    
+                if interface.name_prefix=="":
+                    interface.name_prefix = context
+    
+                if "bgp" in net_context[context].keys():
+                # if bgp key is defined in current context
+                    bgp = BGP(net_context[context]["bgp"])
+    
+                    bgp.name = context
+                    if bgp.router_id =="":
+                        bgp.router_id = idx
+    
+                    if isinstance(net_context[context]["bgp"]["neighbor"], list):
+                        bgp.neighbor = BGP(net_context[context]["bgp"]["neighbor"][idx])
+                    else:
+                        bgp.neighbor = BGP(net_context[context]["bgp"]["neighbor"])
+    
+                    if bgp.neighbor.name_prefix=="":
+                        bgp.neighbor.name_prefix = context
+    
+                    bgp.neighbor.port = interface.port
+                    bgp.neighbor.vlan = interface.vlan
+    
+        #        print bgp.neighbor.neighbors(bgp_neighbor_template)
+        #        print bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
+    
+                    ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
+    
+    #                print prefix_list_template.format(context = net_cont)
+                    bgp_conf += bgp_template.format(bgp=bgp,
+                                                    ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template),
+                                                    neighbor_list = bgp.neighbor.neighbors(bgp_neighbor_template),
+                                                    prefix_list = prefix_list_template.format(neighbor = bgp.neighbor)
+                                                    )
+    
+                #print bgp_template.format(bgp=bgp,ipv4_neighbor="",neighbor_list="")
+                    if "bfd"  in net_context[context].keys():
+                        
+                       
+                        bfd = BFD(net_context[context]["bfd"])
+        #                bfd = BFD(dict())
+                        bfd.name = context
+                        
+#                        bfd.interfaces = BFD(net_context[context]["bfd"]["interface"])
+                        
+                        if isinstance(net_context[context]["bfd"]["interface"], list):
+                            bfd.interfaces = BFD(net_context[context]["bfd"]["interface"][idx])
+                        else:
+                            bfd.interfaces = BFD(net_context[context]["bfd"]["interface"])
+    
+                        if bfd.interfaces.name_prefix=="":
+                            bfd.interfaces.name_prefix = context
+    
+                        bfd.interfaces.port = interface.port
+                        bfd.interfaces.vlan = interface.vlan
+                        
+                        bfd.interfaces.src = interface.ipaddr
+                        bfd.interfaces.addr = bgp.neighbor.addr
+    
+                        interfaces = bfd.interfaces.interfaces(bfd_interfaces_template)
+    
+                        bfd_conf += bfd_template.format(bfd=bfd, bfd_interface = bfd.interfaces.interfaces(bfd_interfaces_template)
+                                                    )
+    #            print
+                context_conf += net_context_template.format(context=net_cont,loopback=loopback_conf,ip_interface=interface.stringify(ip_interface_template))
 
     print context_conf
     print bgp_conf
