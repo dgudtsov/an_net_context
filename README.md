@@ -11,16 +11,18 @@ Work with python **2.7**
 
         net_context = {
           "context-1": {
-              "loopback":{},
-              "ip-intf":{},
+              "loopback":[],
+              "ip-intf":[],
               "bgp" : {},
-              "bfd" : {}
+              "bfd" : {},
+              "uepool": []
           },
           "context-2": {
-              "loopback":{},
-              "ip-intf":{},
+              "loopback":[],
+              "ip-intf":[],
               "bgp" : {},
-              "bfd" : {}
+              "bfd" : {},
+              "uepool": []
           },
           "context-3": {},
           ...
@@ -32,8 +34,28 @@ Work with python **2.7**
               "loopback":[ {"name":"loopback-1","ip":"10.10.10.1",...},{"name":"loopback-2","ip":"10.10.10.2",...},...,{} ],
               "ip-intf":[ {"name_prefix":"ipv4",...},{"name_prefix":"ipv6",...},...,{} ],
               "bgp" : {...,"neighbor": [ {"name_prefix":"ipv4",...}, {"name_prefix":"ipv6",...},...,{} ] },
-              "bfd" : {"interface": [ {"name_prefix":"ipv4",...}, {"name_prefix":"ipv6",...},...,{} ] }
+              "bfd" : {"interface": [ {"name_prefix":"ipv4",...}, {"name_prefix":"ipv6",...},...,{} ] },
+              "uepool": [{ "name": "pool_1","ip_sub_pool_names": ["subpool_1","subpool_2",...], "ip_sub_pool_ranges": ["abcd / n","abcd / n",...] },..., {} ]
           }
+
+#### UE Pools definition
+
+UE pool is defined as array of dicts (hashes). Each dict has three keys: 
+name - name of ue pool,
+ip_sub_pool_names - array containing names of ue sub pools
+ip_sub_pool_ranges - array in CIDR format corresponding to ip_sub_pool_names
+
+    "ue-pool" : [
+        { "name": "internet",
+          "ip_sub_pool_names": ["subpool_1","subpool_2","subpool_3"],
+          "ip_sub_pool_ranges": ["192.168.1.1/24","192.168.2.1/24","192.168.3.1/24"]
+        },
+        { "name": "internet6",
+          "ip_sub_pool_names": ["subpool_4","subpool_5","subpool_6"],
+          "ip_sub_pool_ranges": ["2a00:1fa0:4100::/44","2a00:1fa0:4110::/44","2a00:1fa0:4120::/44"]
+        }                 
+        ]
+
 
 ### 2. Verify existing configuration
 Run: 
