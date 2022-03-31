@@ -4,14 +4,14 @@
 '''
 
 '''
-v1.1
+v1.2
 Changes:
 - list of loopbacks can be defined per each network context
 - list of ip-intf, bgp, bfd
+- added ue pools/subpools definition
 
 TODO:
 add bgp in/out filtering
-add ue ip pools
 
 '''
 
@@ -21,6 +21,8 @@ from conf_context_lab import *
 #from conf_context_lab_old import *
 
 from template_context import *
+
+import ipaddress
 
 class Unistruct(object):
     def __init__(self,context):
@@ -33,6 +35,30 @@ class Context(Unistruct):
     pass
 
 class Loopback(Unistruct):
+    pass
+
+class UEPool(Unistruct):
+    # create string from template + dict
+    def stringify(self,template):
+        subpool_definition=""
+        for idx,subpool in enumerate(self.ip_sub_pool_names):
+            
+            net=ipaddress.ip_network(unicode(self.ip_sub_pool_ranges[idx]), strict=False)
+            
+            range_start = net[0]
+            range_end = net[-1] 
+
+            kvp = dict ( name=self.name+"_"+subpool+"_"+str(range_start).replace(".", "_").replace(":", "_"),
+                         range_start =range_start,
+                         range_end = range_end,
+                         prefix = net.prefixlen,
+                         uepool = self.name  
+                    )
+
+            subpool = Unistruct (kvp)
+            subpool_definition+=template.format(subpool = subpool)
+
+        return subpool_definition    
     pass
 
 class Interface(Unistruct):
@@ -104,6 +130,20 @@ if __name__ == '__main__':
         c=dict({"name":context})
 
         net_cont = Context(c)
+        
+        if "ue-pool" in net_context[context].keys():
+            
+            ue_sub_pool, ue_pool, ue_pool_subpool = "","",""
+            
+            for pool in net_context[context]["ue-pool"]:
+                
+                uepool = UEPool(pool)
+            
+                ue_sub_pool += uepool.stringify(uesubpool_template)
+                
+                ue_pool += uepool_template.format(uepool = uepool )
+            
+            ue_pool_subpool = ue_pool + ue_sub_pool
 
         if "ip-intf" in net_context[context].keys():
 
@@ -192,7 +232,7 @@ if __name__ == '__main__':
                         bfd_conf += bfd_template.format(bfd=bfd, bfd_interface = bfd.interfaces.interfaces(bfd_interfaces_template)
                                                     )
     #            print
-                context_conf += net_context_template.format(context=net_cont,loopback=loopback_conf,ip_interface=interface.stringify(ip_interface_template))
+                context_conf += net_context_template.format(context=net_cont,loopback=loopback_conf,ip_interface=interface.stringify(ip_interface_template), ue_pool=ue_pool_subpool)
 
     print context_conf
     print bgp_conf

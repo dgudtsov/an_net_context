@@ -10,6 +10,16 @@ network-context {context.name} ; top; commit
  !
  {ip_interface}
  !
+ {ue_pool}
+ !
+"""
+
+uepool_template = """
+ ue-pool {uepool.name} allocation-mode local-allocation 
+"""
+
+uesubpool_template = """
+ ip-sub-pool {subpool.name} ip-sub-pool-type UE-IP-Pool ue-pool {subpool.uepool} range-start {subpool.range_start} range-end {subpool.range_end} advertise yes suppressicmp false route-summary-prefix-length {subpool.prefix}
 """
 
 loopback_template = """
