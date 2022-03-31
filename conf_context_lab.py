@@ -80,46 +80,6 @@ net_context = {
           "ip_sub_pool_ranges": ["2a00:1fa0:4100::/44","2a00:1fa0:4110::/44","2a00:1fa0:4120::/44"]
         }                 
         ]
-#           ,           
-#     "ue-pool" : [ 
-#         { "name": "internet",
-#           "ip-sub-pool": [
-#               { "name": "subpool-1",
-#                 "ip-range": "192.168.1.1/24",
-#                 # if empty will populated from ip-range 
-#                 "range-start": "192.168.1.1",
-#                 "range-end": "192.168.1.255",
-#                 "route-summary-prefix-length":"24"
-#               },
-#               { "name": "subpool-2",
-#                 "ip-range": "192.168.2.1/24",
-#                 # if empty will populated from ip-range 
-#                 "range-start": "192.168.2.1",
-#                 "range-end": "192.168.2.255",
-#                 "route-summary-prefix-length":"24"
-#               }
-#               ]
-#          },
-#         { "name": "internet6",
-#           "ip-sub-pool": [
-#               { "name": "subpool-3",
-#                 "ip-range": "2a00:1fa0:4100::/44",
-#                 # if empty will populated from ip-range 
-#                 "range-start": "",
-#                 "range-end": "",
-#                 "route-summary-prefix-length":"44"
-#               },
-#               { "name": "subpool-4",
-#                 "ip-range": "2a00:1fa0:4110::/44",
-#                 # if empty will populated from ip-range 
-#                 "range-start": "",
-#                 "range-end": "",
-#                 "route-summary-prefix-length":"44"
-#               }
-#               ]            
-#         }
-#         
-#         ]
     }
 
 }
