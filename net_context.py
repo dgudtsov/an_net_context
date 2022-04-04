@@ -145,6 +145,8 @@ if __name__ == '__main__':
         
         if "ue-pool" in net_context[context].keys():
             ue_pool_subpool = uepool_cfg (net_context[context]["ue-pool"])
+        else:
+            ue_pool_subpool=""
 
         if "ip-intf" in net_context[context].keys():
 

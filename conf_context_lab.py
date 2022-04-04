@@ -4,7 +4,7 @@
 '''
 
 net_context = {
-"zebra1": {
+"context1": {
     "loopback": [ {
         "name":"lab-loop-1",
         "ip":"10.10.10.1",
@@ -80,9 +80,47 @@ net_context = {
           "ip_sub_pool_ranges": ["2a00:1fa0:4100::/44","2a00:1fa0:4110::/44","2a00:1fa0:4120::/44"]
         }                 
         ]
+    },
+"context2": {
+    "loopback": {
+        "name":"lab-loop-1",
+        "ip":"10.10.10.1",
+        "gtp":"yes"       
+        },
+           
+    "ip-intf": {
+        # if empty - get it from context name 
+        "name_prefix":"Gi_ipv4",
+        "vlan": [3001,3002,4001,4002],        
+        "port": ["3-1","3-2","4-1","4-2"],
+        "ipaddr": ["10.10.31.1","10.10.32.1","10.10.41.1","10.10.42.1"],
+        "mask":"24"
+        },
+       
+    "bgp" : {
+        "local_as":"64600",
+        "router_id":"", #equal to loopback.ip
+        "ipv4_ucast_af":{
+            "neighbor":[]
+            },
+        "neighbor": {
+            # if empty - get it from context name 
+            "name_prefix":"Gi_ipv4",            
+            "remote_as":"64601",
+            "port": [], # port list will be copied from ip-intf
+            "addr": ["10.10.31.10","10.10.32.10","10.10.41.10","10.10.42.10"]
+            },
+        },
+    "bfd" : {
+        "interface": {
+            "name_prefix":"Gi_ipv4",            
+            "addr": [], # from bgp neighbor
+            "src":[], #src addr from ip-intf.ipaddr
+            "port": [], # port list will be copied from ip-intf
+            }
+        }
     }
 }
-
 
 def config_dump(key=None):
     print ("Configuration dump:")
