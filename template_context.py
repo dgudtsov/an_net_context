@@ -3,23 +3,26 @@
 @author: Denis Gudtsov
 '''
 
-
+# Support of overlapping IP address in network context
 net_context_template = """
 network-context {context.name} ; top; commit
+network-context {context.name} ip-shared-subnet enabled
  {loopback} 
  !
  {ip_interface}
+ commit
  !
  {ue_pool}
+ commit
  !
 """
 
 uepool_template = """
- ue-pool {uepool.name} allocation-mode local-allocation 
+ ue-pool {uepool.name} allocation-mode local-allocation ; exit
 """
 
 uesubpool_template = """
- ip-sub-pool {subpool.name} ip-sub-pool-type UE-IP-Pool ue-pool {subpool.uepool} range-start {subpool.range_start} range-end {subpool.range_end} advertise yes suppressicmp false route-summary-prefix-length {subpool.prefix}
+ ip-sub-pool {subpool.name} ip-sub-pool-type UE-IP-Pool ue-pool {subpool.uepool} range-start {subpool.range_start} range-end {subpool.range_end} advertise yes suppressicmp false route-summary-prefix-length {subpool.prefix} ; exit
 """
 
 loopback_template = """
@@ -27,7 +30,7 @@ loopback_template = """
 """
 
 ip_interface_template = """
- ip-interface {interface.name} port vth-{interface.port} vlan-tag {interface.vlan} ip-address {interface.ip} prefix-length {interface.mask} mtu 1500 admin-state enabled ; commit 
+ ip-interface {interface.name} port vth-{interface.port} vlan-tag {interface.vlan} ip-address {interface.ip} prefix-length {interface.mask} mtu 1500 admin-state enabled ; exit 
  !
 """
 

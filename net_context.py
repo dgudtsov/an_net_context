@@ -16,11 +16,15 @@ add bgp in/out filtering
 '''
 
 # BOTH format style are supported
-from conf_context_lab import *
+#from conf_context_lab import *
+
+from MTS_EPC_net_context_SAEGW_U_v008 import *
 
 #from conf_context_lab_old import *
 
 from template_context import *
+
+
 
 import ipaddress
 
@@ -151,10 +155,11 @@ if __name__ == '__main__':
         if "ip-intf" in net_context[context].keys():
 
             loopbacks=[]
-            if isinstance(net_context[context]["loopback"], list):
-                loopbacks = net_context[context]["loopback"]
-            else:
-                loopbacks.append(net_context[context]["loopback"])
+            if "loopback" in net_context[context].keys():
+                if isinstance(net_context[context]["loopback"], list):
+                    loopbacks = net_context[context]["loopback"]
+                else:
+                    loopbacks.append(net_context[context]["loopback"])
 
 #           loopback = Loopback(net_context[context]["loopback"])
 
