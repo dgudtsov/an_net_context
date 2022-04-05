@@ -52,7 +52,7 @@ ip_sub_pool_ranges - array in CIDR format corresponding to ip_sub_pool_names
         },
         { "name": "internet6",
           "ip_sub_pool_names": ["subpool_4","subpool_5","subpool_6"],
-          "ip_sub_pool_ranges": ["2a00:1fa0:4100::/44","2a00:1fa0:4110::/44","2a00:1fa0:4120::/44"]
+          "ip_sub_pool_ranges": ["2a00:1fa0:4100::/64","2a00:1fa0:4110::/64","2a00:1fa0:4120::/64"]
         }                 
         ]
 
