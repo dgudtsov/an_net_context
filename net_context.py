@@ -97,6 +97,20 @@ class Interface(Unistruct):
 
 class BGP(Unistruct):
 
+    # return non-empty string only in case neighbors is ipv4
+    def neighbors_v4(self,template):
+        if self.version==4:
+            return self.neighbors(template)
+        else:
+            return ""
+    
+    # return non-empty string only in case neighbors is ipv6
+    def neighbors_v6(self,template):
+        if self.version==6:
+            return self.neighbors(template)
+        else:
+            return ""
+    
     def neighbors(self,template):
 
         neighbors_definition=""
@@ -112,7 +126,6 @@ class BGP(Unistruct):
 
             neigh = Unistruct (kvp)
             neighbors_definition+=template.format(neighbor = neigh)
-
 
         return neighbors_definition
 
@@ -269,8 +282,11 @@ USAGE
                             bgp.neighbor = BGP(net_context[context]["bgp"]["neighbor"])
                             size_of_bgp=1
     
+                        # store bgp neighbor address version: ipv4 or ipv6 
+                        bgp.neighbor.version = ipaddress.ip_network(unicode(bgp.neighbor.addr[0]), strict=False).version
+                        
                         if size_of_bgp != len(net_context_interfaces):
-                            print "error in conext:",context,", size of bgp neighbor mistmatch with number of context interfaces"
+                            print "error in context:",context,", size of bgp neighbor mismatch with number of context interfaces"
                             exit(1)
     
                         if bgp.neighbor.name_prefix=="":
@@ -281,26 +297,27 @@ USAGE
                         bgp.neighbor.vlan = interface.vlan
     
                         if len(bgp.neighbor.port) != len(bgp.neighbor.addr):
-                            print "error in context:",context,", size of bgp neighbor addrs mistmatch with context interfaces ipaddrs:"
+                            print "error in context:",context,", size of bgp neighbor addrs mismatch with context interfaces ipaddrs:"
                             print "interface ipaddr:",interface.ipaddr
                             print "bgp addr:",bgp.neighbor.addr
                             exit(1)
     
             #        print bgp.neighbor.neighbors(bgp_neighbor_template)
             #        print bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
-    
-                        ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
+#                        ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
+#                        ipv6_neighbor=bgp.neighbor.neighbors(bgp_ipv6_neighbor_template)
     
         #                print prefix_list_template.format(context = net_cont)
+                
                         bgp_conf += bgp_template.format(bgp=bgp,
-                                                        ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template),
+                                                        ipv4_neighbor=bgp.neighbor.neighbors_v4(bgp_ipv4_neighbor_template),
+                                                        ipv6_neighbor=bgp.neighbor.neighbors_v6(bgp_ipv6_neighbor_template),
                                                         neighbor_list = bgp.neighbor.neighbors(bgp_neighbor_template),
-                                                        prefix_list = prefix_list_template.format(neighbor = bgp.neighbor)
+                                                        prefix_list = prefix_list_template.format(neighbor = bgp.neighbor) if bgp.neighbor.version==4 else prefix_list_v6_template.format(neighbor = bgp.neighbor)
                                                         )
     
                     #print bgp_template.format(bgp=bgp,ipv4_neighbor="",neighbor_list="")
                         if "bfd"  in net_context[context].keys():
-    
     
                             bfd = BFD(net_context[context]["bfd"])
             #                bfd = BFD(dict())
@@ -316,7 +333,7 @@ USAGE
                                 size_of_bfd=1
     
                             if size_of_bfd != len(net_context_interfaces):
-                                print "error in conext:",context,", size of bfd.neighbor mistmatch with net_context_interfaces"
+                                print "error in context:",context,", size of bfd.neighbor mismatch with net_context_interfaces"
                                 exit(1)
     
     
@@ -341,8 +358,8 @@ USAGE
         # or print only those were selected 
         if (print_context == None or context in print_context) :
             if print_intf: print context_conf 
-            if print_bgp: print bgp_conf
-            if print_bfd: print bfd_conf
+            if print_bgp:  print bgp_conf
+            if print_bfd:  print bfd_conf
 
         return 0
     except KeyboardInterrupt:

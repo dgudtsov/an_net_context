@@ -68,6 +68,9 @@ ip-protocols bgp router {bgp.name} max-paths ebgp 4
  !
  ipv6-ucast-af
   dampening admin-state disabled
+  redistribute static
+ !
+  {ipv6_neighbor}
  !
  commit
 """
@@ -76,10 +79,17 @@ bgp_ipv4_neighbor_template="""
    neighbor {neighbor.name}
     prefix-list out prefix-list-name pl_{neighbor.name_prefix}_bgp_out
     redistribute static
-
    !
 """
 #     prefix-list in prefix-list-name pl_{neighbor.name_prefix}_bgp_in
+
+bgp_ipv6_neighbor_template="""
+   neighbor {neighbor.name}
+    prefix-list out prefix-list-name pl_v6_{neighbor.name_prefix}_bgp_out
+    redistribute static
+   !
+"""
+
 
 #  neighbor {neighbor.name} neighbor-addr {neighbor.addr} remote-as {neighbor.remote_as} fall-over-bfd single-hop
 # neighbor {neighbor.name} fall-over-bfd single-hop
@@ -108,6 +118,13 @@ prefix-list pl_{neighbor.name_prefix}_bgp_in
 !
 prefix-list pl_{neighbor.name_prefix}_bgp_out
  10 permit address 0.0.0.0 prefix-length 32
+!
+commit
+"""
+
+prefix_list_v6_template="""
+prefix-list-ipv6 pl_v6_{neighbor.name_prefix}_bgp_out
+ 10 permit address :: prefix-length 64
 !
 commit
 """
