@@ -4,11 +4,10 @@
 '''
 
 '''
-v1.2
+v1.3
 Changes:
-- list of loopbacks can be defined per each network context
-- list of ip-intf, bgp, bfd
-- added ue pools/subpools definition
+- added cli argparse
+- detailed errors output
 
 TODO:
 add bgp in/out filtering
@@ -62,9 +61,10 @@ class UEPool(Unistruct):
             net=ipaddress.ip_network(unicode(self.ip_sub_pool_ranges[idx]), strict=False)
 
             range_start = net[0]
-            range_end = net[-1]
+            range_end = net[-1] if net.version==4 else net[-1]+1
+            # special trick to have :: at the end
 
-            kvp = dict ( name=self.name+"_"+subpool+"_"+str(range_start).replace(".", "_").replace(":", "_"),
+            kvp = dict ( name=self.name+"_"+str(subpool)+"_"+str(range_start).replace(".", "_").replace(":", "_"),
                          range_start =range_start,
                          range_end = range_end,
                          prefix = net.prefixlen,
