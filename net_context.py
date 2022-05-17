@@ -16,7 +16,7 @@ add bgp in/out filtering
 __all__ = []
 __version__ = 0.1
 __date__ = '2022-05-13'
-__updated__ = '2022-05-13'
+__updated__ = '2022-05-17'
 
 # BOTH format style are supported
 #from conf_context_lab import *
@@ -39,6 +39,7 @@ DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
 
+# Parent class for all child classes
 class Unistruct(object):
     def __init__(self,context):
         for k, v in context.iteritems():
@@ -46,12 +47,15 @@ class Unistruct(object):
                 setattr(self, k, v)
         return
 
+# network-context
 class Context(Unistruct):
     pass
 
+# network-context loopback-ip 
 class Loopback(Unistruct):
     pass
 
+# ue-pool & ip-sub-pool
 class UEPool(Unistruct):
     # create string from template + dict
     def stringify(self,template):
@@ -77,6 +81,7 @@ class UEPool(Unistruct):
         return subpool_definition
     pass
 
+# network-context ip-interface
 class Interface(Unistruct):
     # create string from template + dict
     def stringify(self,template):
@@ -95,24 +100,19 @@ class Interface(Unistruct):
 
         return interface_definition
 
+# ip-protocols bgp router
 class BGP(Unistruct):
 
     # return non-empty string only in case neighbors is ipv4
     def neighbors_v4(self,template):
-        if self.version==4:
-            return self.neighbors(template)
-        else:
-            return ""
+        return self.neighbors(template) if self.version==4 else ""
     
     # return non-empty string only in case neighbors is ipv6
     def neighbors_v6(self,template):
-        if self.version==6:
-            return self.neighbors(template)
-        else:
-            return ""
+        return self.neighbors(template) if self.version==6 else ""
     
+    # decorate BGP neighbors output 
     def neighbors(self,template):
-
         neighbors_definition=""
 
         for idx,port in enumerate(self.port):
@@ -129,6 +129,7 @@ class BGP(Unistruct):
 
         return neighbors_definition
 
+# ip-protocols bfd router
 class BFD(Unistruct):
 
     def interfaces(self,template):
@@ -149,6 +150,7 @@ class BFD(Unistruct):
 
         return interfaces_definition
 
+# ip-sub-pool decorator
 def uepool_cfg(cfg_obj):
     ue_sub_pool, ue_pool, ue_pool_subpool = "","",""
 
@@ -233,10 +235,7 @@ USAGE
     
             net_cont = Context(c)
     
-            if "ue-pool" in net_context[context].keys():
-                ue_pool_subpool = uepool_cfg (net_context[context]["ue-pool"])
-            else:
-                ue_pool_subpool=""
+            ue_pool_subpool = uepool_cfg (net_context[context]["ue-pool"]) if "ue-pool" in net_context[context].keys() else ""
     
             if "ip-intf" in net_context[context].keys():
     
@@ -283,6 +282,7 @@ USAGE
                             size_of_bgp=1
     
                         # store bgp neighbor address version: ipv4 or ipv6 
+                        # basing on first address in neighbor address array
                         bgp.neighbor.version = ipaddress.ip_network(unicode(bgp.neighbor.addr[0]), strict=False).version
                         
                         if size_of_bgp != len(net_context_interfaces):
@@ -301,13 +301,6 @@ USAGE
                             print "interface ipaddr:",interface.ipaddr
                             print "bgp addr:",bgp.neighbor.addr
                             exit(1)
-    
-            #        print bgp.neighbor.neighbors(bgp_neighbor_template)
-            #        print bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
-#                        ipv4_neighbor=bgp.neighbor.neighbors(bgp_ipv4_neighbor_template)
-#                        ipv6_neighbor=bgp.neighbor.neighbors(bgp_ipv6_neighbor_template)
-    
-        #                print prefix_list_template.format(context = net_cont)
                 
                         bgp_conf += bgp_template.format(bgp=bgp,
                                                         ipv4_neighbor=bgp.neighbor.neighbors_v4(bgp_ipv4_neighbor_template),
@@ -349,10 +342,15 @@ USAGE
     
                             interfaces = bfd.interfaces.interfaces(bfd_interfaces_template)
     
-                            bfd_conf += bfd_template.format(bfd=bfd, bfd_interface = bfd.interfaces.interfaces(bfd_interfaces_template)
+                            bfd_conf += bfd_template.format(bfd=bfd, 
+                                                            bfd_interface = bfd.interfaces.interfaces(bfd_interfaces_template)
                                                         )
-        #            print
-                    context_conf += net_context_template.format(context=net_cont,loopback=loopback_conf,ip_interface=interface.stringify(ip_interface_template), ue_pool=ue_pool_subpool)
+                            
+                    context_conf += net_context_template.format(context=net_cont,
+                                                                loopback=loopback_conf,
+                                                                ip_interface=interface.stringify(ip_interface_template), 
+                                                                ue_pool=ue_pool_subpool
+                                                                )
     
         # if no context is selected, then print all contexts are defined
         # or print only those were selected 
@@ -384,7 +382,7 @@ if __name__ == "__main__":
     if PROFILE:
         import cProfile
         import pstats
-        profile_filename = 'net_context_2_profile.txt'
+        profile_filename = 'net_context_profile.txt'
         cProfile.run('main()', profile_filename)
         statsfile = open("profile_stats.txt", "wb")
         p = pstats.Stats(profile_filename, stream=statsfile)
